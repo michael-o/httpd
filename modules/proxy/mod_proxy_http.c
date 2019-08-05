@@ -1302,7 +1302,9 @@ int ap_proxy_http_process_response(proxy_http_req_t *req)
                                    " failed.",
                                    backend->hostname, backend->port);
             }
-            return ap_proxyerror(r, HTTP_BAD_GATEWAY,
+            return ap_proxyerror(r, APR_STATUS_IS_TIMEUP(rc)
+                                        ? HTTP_GATEWAY_TIME_OUT
+                                        : HTTP_BAD_GATEWAY,
                                  "Error reading from remote server");
         }
         /* XXX: Is this a real headers length send from remote? */
@@ -1759,12 +1761,12 @@ int ap_proxy_http_process_response(proxy_http_req_t *req)
                     }
                     else if (rv != APR_SUCCESS) {
                         /* In this case, we are in real trouble because
-                         * our backend bailed on us. Pass along a 502 error
+                         * our backend bailed on us. Pass along a 504 error
                          * error bucket
                          */
                         ap_log_rerror(APLOG_MARK, APLOG_ERR, rv, r, APLOGNO(01110)
                                       "error reading response");
-                        ap_proxy_backend_broke(r, bb);
+                        ap_proxy_backend_broke_ex(r, bb, HTTP_GATEWAY_TIME_OUT);
                         ap_pass_brigade(r->output_filters, bb);
                         backend_broke = 1;
                         backend->close = 1;

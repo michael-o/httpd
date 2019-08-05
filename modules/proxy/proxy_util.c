@@ -3323,6 +3323,13 @@ int ap_proxy_lb_workers(void)
 PROXY_DECLARE(void) ap_proxy_backend_broke(request_rec *r,
                                            apr_bucket_brigade *brigade)
 {
+    ap_proxy_backend_broke_ex(r, brigade, HTTP_BAD_GATEWAY);
+}
+
+PROXY_DECLARE(void) ap_proxy_backend_broke_ex(request_rec *r,
+                                              apr_bucket_brigade *brigade,
+                                              int error)
+{
     apr_bucket *e;
     conn_rec *c = r->connection;
 
@@ -3333,8 +3340,7 @@ PROXY_DECLARE(void) ap_proxy_backend_broke(request_rec *r,
      */
     if (r->main)
         r->main->no_cache = 1;
-    e = ap_bucket_error_create(HTTP_BAD_GATEWAY, NULL, c->pool,
-                               c->bucket_alloc);
+    e = ap_bucket_error_create(error, NULL, c->pool, c->bucket_alloc);
     APR_BRIGADE_INSERT_TAIL(brigade, e);
     e = apr_bucket_eos_create(c->bucket_alloc);
     APR_BRIGADE_INSERT_TAIL(brigade, e);

@@ -1088,6 +1088,18 @@ PROXY_DECLARE(void) ap_proxy_backend_broke(request_rec *r,
                                            apr_bucket_brigade *brigade);
 
 /**
+ * Signal the upstream chain that the connection to the backend broke in the
+ * middle of the response. This is done by sending an error bucket with
+ * status supplied from error and an EOS bucket up the filter chain.
+ * @param r       current request record of client request
+ * @param brigade The brigade that is sent through the output filter chain
+ * @param error   The HTTP error code to put in the bucket
+ */
+PROXY_DECLARE(void) ap_proxy_backend_broke_ex(request_rec *r,
+                                              apr_bucket_brigade *brigade,
+                                              int error);
+
+/**
  * Return a hash based on the passed string
  * @param str     string to produce hash from
  * @param method  hashing method to use
