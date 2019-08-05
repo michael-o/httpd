@@ -1307,7 +1307,9 @@ int ap_proxy_http_process_response(proxy_http_req_t *req)
                                    backend->hostname, backend->port);
             }
             proxy_run_detach_backend(r, backend);
-            return ap_proxyerror(r, HTTP_GATEWAY_TIME_OUT,
+            return ap_proxyerror(r, APR_STATUS_IS_TIMEUP(rc)
+                                        ? HTTP_GATEWAY_TIME_OUT
+                                        : HTTP_BAD_GATEWAY,
                                  "Error reading from remote server");
         }
         /* XXX: Is this a real headers length send from remote? */
